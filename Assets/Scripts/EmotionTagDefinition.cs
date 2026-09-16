@@ -11,7 +11,7 @@ public class EmotionTagDefinition : ScriptableObject
         "joy",
         "sorrow",
         "fear",
-        "arousal",
+        "love",
         "angry",
         "disgust",
         "surprised",
