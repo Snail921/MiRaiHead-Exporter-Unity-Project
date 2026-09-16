@@ -1,0 +1,52 @@
+# Unity generated directories
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# AssetBundle build output
+/MiraiHeadAssetBundle/
+
+# User-provided and imported assets
+/Assets/AndroidAssetBundles/*
+!/Assets/AndroidAssetBundles/.gitkeep
+/Assets/ImportedMiRaiHeads/*
+!/Assets/ImportedMiRaiHeads/.gitkeep
+
+# Paid plugins installed locally by the user
+/Assets/MagicaCloth/
+/Assets/MagicaCloth.meta
+/Assets/MagicaCloth2/
+/Assets/MagicaCloth2.meta
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Unity crash reports and profiling output
+sysinfo.txt
+*.tmp
+*.bak
