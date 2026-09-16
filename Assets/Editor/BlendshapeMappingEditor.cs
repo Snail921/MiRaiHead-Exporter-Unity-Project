@@ -149,6 +149,7 @@ public sealed class BlendshapeMappingEditor : Editor
 
         DrawProperty("skinnedMeshRenderer");
         DrawProperty("proxyNames");
+        DrawProperty("emotionTagDefinitionOverride");
         if(blendshapeMapping.proxyNames != null)
         {
             // proxyNames 選択

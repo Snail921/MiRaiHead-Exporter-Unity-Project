@@ -49,10 +49,13 @@ FBXから生成されたモデルをシーンへ配置し、Transform、マテ�
 表情を制御するGameObjectへ`BlendshapeMapping`コンポーネントを追加します。
 
 1. `Skinned Mesh Renderer`へ顔のRendererを設定します。
-2. 必要に応じて`Proxy Name List`を設定します。
-3. 顔のBlendShapeを目的の表情へ調整します。
-4. Inspectorの`Create`で表情Proxyを作成します。
-5. `Preview`、`Capture`、`Reset Blendshapes`を使って各表情を確認・調整します。
+2. `Proxy Name List`へ`Assets/Defaults/DefaultProxyNameList`を設定します。
+3. `Emotion Tag Definition Override`へ`Assets/Defaults/DefaultEmotionTagDefinition`を設定します。
+4. 顔のBlendShapeを目的の表情へ調整します。
+5. Inspectorの`Create`で表情Proxyを作成します。
+6. `Preview`、`Capture`、`Reset Blendshapes`を使って各表情を確認・調整します。
+
+標準の名前や感情タグを変更する場合は、Defaultアセットを複製し、キャラクター専用のアセットとして編集することを推奨します。
 
 ### 6. SimpleBlinkを設定する
 
