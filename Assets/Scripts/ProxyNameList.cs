@@ -10,6 +10,9 @@ public class ProxyNameList : ScriptableObject
     {
         "blink",
         "blink_joy",
+        "blink_L",
+        "blink_R",
+        "pupil_constrict",
         "joy",
         "sorrow",
         "angry",
