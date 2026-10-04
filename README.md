@@ -57,6 +57,10 @@ FBXから生成されたモデルをシーンへ配置し、Transform、マテ�
 
 標準の名前や感情タグを変更する場合は、Defaultアセットを複製し、キャラクター専用のアセットとして編集することを推奨します。
 
+別のFBXで作成したBlendshapeMappingを流用した場合、同じBlendShape名でもMesh内のインデックスが異なることがあります。Inspectorの`Sync Indices From BlendShape Names`を押し、保存済みインデックスを現在のMeshに合わせてください。名前が見つからない場合や同名Shapeが重複している場合は、内容を修正するまで同期できません。
+
+個別エクスポートおよび一括ビルドの直前にも自動で同じ検証・同期が行われます。解決できないBlendShape名がある場合は、誤った表情を含むAssetBundleを生成しないようビルドを停止します。
+
 ### 6. SimpleBlinkを設定する
 
 瞬きを制御するGameObjectへ`SimpleBlink`コンポーネントを追加します。

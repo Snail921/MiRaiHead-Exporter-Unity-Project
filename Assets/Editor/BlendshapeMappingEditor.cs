@@ -176,6 +176,38 @@ public sealed class BlendshapeMappingEditor : Editor
             blendshapeMapping.ResetAllBlendshapes();
         EditorGUILayout.EndHorizontal();
 
+        EditorGUILayout.Space();
+        EditorGUILayout.HelpBox(
+            "実機では保存済みのBlendShapeインデックスが使用されます。" +
+            "別のFBXからMappingを流用した場合は、エクスポート前に名前からインデックスを再同期してください。",
+            MessageType.Info);
+
+        if (GUILayout.Button("Sync Indices From BlendShape Names", GUILayout.Height(28f)))
+        {
+            serializedObject.ApplyModifiedProperties();
+            BlendshapeIndexSyncReport report =
+                BlendshapeIndexSyncUtility.SynchronizeMapping(blendshapeMapping);
+
+            if (report.Succeeded)
+            {
+                Debug.Log($"BlendShape index sync completed. {report.GetSummary()}", blendshapeMapping);
+                EditorUtility.DisplayDialog(
+                    "BlendShape Index Sync",
+                    "同期が完了しました。\n\n" + report.GetSummary(),
+                    "OK");
+            }
+            else
+            {
+                Debug.LogError(report.GetErrorMessage(), blendshapeMapping);
+                EditorUtility.DisplayDialog(
+                    "BlendShape Index Sync Failed",
+                    report.GetErrorMessage(),
+                    "OK");
+            }
+
+            serializedObject.Update();
+        }
+
         // proxies 配列を ReorderableList で描画
         proxiesList.DoLayoutList();
 

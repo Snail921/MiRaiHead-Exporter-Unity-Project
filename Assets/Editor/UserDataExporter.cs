@@ -12,6 +12,17 @@ public class UserDataExporter
     {
         try
         {
+            if (!BlendshapeIndexSyncUtility.SynchronizeAllAssetBundlePrefabs(
+                    out BlendshapeIndexSyncReport syncReport))
+            {
+                string message = syncReport.GetErrorMessage();
+                Debug.LogError(message);
+                EditorUtility.DisplayDialog("AssetBundle Build Failed", message, "OK");
+                return;
+            }
+
+            Debug.Log($"BlendShape index validation completed. {syncReport.GetSummary()}");
+
             if (!Directory.Exists(SafeOutDir))
                 Directory.CreateDirectory(SafeOutDir);
 

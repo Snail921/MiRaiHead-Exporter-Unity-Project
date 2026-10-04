@@ -41,6 +41,17 @@ public class MiraiHeadEditor : Editor
             return;
         }
 
+        if (!BlendshapeIndexSyncUtility.SynchronizePrefabAtPath(
+                assetPath, out BlendshapeIndexSyncReport syncReport))
+        {
+            string message = syncReport.GetErrorMessage();
+            Debug.LogError(message, script);
+            EditorUtility.DisplayDialog("AssetBundle Export Failed", message, "OK");
+            return;
+        }
+
+        Debug.Log($"BlendShape index validation completed. {syncReport.GetSummary()}", script);
+
         // 修正ポイント：assetPathを直接渡す
         BuildBundle(bundleName, assetPath);
     }
