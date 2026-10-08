@@ -609,7 +609,7 @@ public class BlendshapeFacialAnimator : BaseBlendshapeManager
                     blendshapeData[bs.index] = (0f, 0f, 0);
 
                 var entry = blendshapeData[bs.index];
-                entry.goalSum += rate;
+                entry.goalSum += bs.value * (rate / 100f);
                 entry.startSum += blendshapeCache[bs.index];
                 entry.count += 1;
                 blendshapeData[bs.index] = entry;
