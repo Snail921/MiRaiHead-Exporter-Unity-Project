@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static MiraiHeadImporterLanguage;
 
 public sealed class MiraiHeadAssetBundleImporterWindow : EditorWindow
 {
@@ -25,22 +26,28 @@ public sealed class MiraiHeadAssetBundleImporterWindow : EditorWindow
 
     private void OnGUI()
     {
-        EditorGUILayout.LabelField("Android AssetBundle Importer", EditorStyles.boldLabel);
+        using (new EditorGUILayout.HorizontalScope())
+        {
+            EditorGUILayout.LabelField(L("Android AssetBundle インポーター", "Android AssetBundle Importer"), EditorStyles.boldLabel);
+            GUILayout.FlexibleSpace();
+            int language = GUILayout.Toolbar(English ? 1 : 0, new[] { "JP", "EN" }, GUILayout.Width(64f));
+            if (language != (English ? 1 : 0)) English = language == 1;
+        }
         EditorGUILayout.HelpBox(
-            "Android用MiRAI Head AssetBundleを、編集可能なPrefab・Mesh・Material・Textureへ変換します。" +
-            "TextureはPNGへ復元し、Shaderはこのプロジェクトの同名Shader（通常はURP/Lit）へ置き換えます。",
+            L("Android用MiRAI Head AssetBundleを、編集可能なPrefab・Mesh・Material・Textureへ変換します。", "Convert an Android MiRAI Head AssetBundle into editable Prefab, Mesh, Material and Texture assets. ") +
+            L("TextureはPNGへ復元し、Shaderはこのプロジェクトの同名Shader（通常はURP/Lit）へ置き換えます。", "Textures are restored as PNGs. Shaders are replaced with matching shaders in this project (usually URP/Lit)."),
             MessageType.Info);
 
         EditorGUILayout.Space();
         DrawPathField("AssetBundle", ref bundlePath, BrowseBundle);
-        DrawPathField("出力フォルダー", ref outputFolder, BrowseOutputFolder);
+        DrawPathField(L("出力フォルダー", "Output folder"), ref outputFolder, BrowseOutputFolder);
         assignAssetBundleName = EditorGUILayout.ToggleLeft(
-            "生成Prefabへ元のAssetBundle名を設定する", assignAssetBundleName);
+            L("生成Prefabへ元のAssetBundle名を設定する", "Assign the original AssetBundle name to the generated Prefab"), assignAssetBundleName);
 
         EditorGUILayout.Space();
         using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(bundlePath)))
         {
-            if (GUILayout.Button("Import as Editable MiRAI Head", GUILayout.Height(36f)))
+            if (GUILayout.Button(L("編集可能なMiRAI Headとしてインポート", "Import as Editable MiRAI Head"), GUILayout.Height(36f)))
                 Import();
         }
     }
@@ -50,27 +57,27 @@ public sealed class MiraiHeadAssetBundleImporterWindow : EditorWindow
         using (new EditorGUILayout.HorizontalScope())
         {
             value = EditorGUILayout.TextField(label, value);
-            if (GUILayout.Button("Browse...", GUILayout.Width(90f))) browse();
+            if (GUILayout.Button(L("参照...", "Browse..."), GUILayout.Width(90f))) browse();
         }
     }
 
     private void BrowseBundle()
     {
         string initial = ResolveInitialDirectory(bundlePath, DefaultSourceFolder);
-        string selected = EditorUtility.OpenFilePanel("Select Android AssetBundle", initial, "");
+        string selected = EditorUtility.OpenFilePanel(L("Android AssetBundleを選択", "Select Android AssetBundle"), initial, "");
         if (!string.IsNullOrEmpty(selected)) bundlePath = selected;
     }
 
     private void BrowseOutputFolder()
     {
         string initial = ResolveInitialDirectory(outputFolder, "Assets");
-        string selected = EditorUtility.OpenFolderPanel("Select output folder", initial, "");
+        string selected = EditorUtility.OpenFolderPanel(L("出力フォルダーを選択", "Select output folder"), initial, "");
         if (string.IsNullOrEmpty(selected)) return;
 
         string assetPath = MiraiHeadAssetBundleImporter.ToAssetPath(selected);
         if (string.IsNullOrEmpty(assetPath))
         {
-            EditorUtility.DisplayDialog("MiRAI Head Importer", "出力先はこのUnityプロジェクトのAssets内を選択してください。", "OK");
+            EditorUtility.DisplayDialog("MiRAI Head Importer", L("出力先はこのUnityプロジェクトのAssets内を選択してください。", "Select an output folder inside this Unity project's Assets folder."), "OK");
             return;
         }
 
@@ -88,20 +95,20 @@ public sealed class MiraiHeadAssetBundleImporterWindow : EditorWindow
             EditorGUIUtility.PingObject(Selection.activeObject);
 
             string message =
-                $"インポートが完了しました。\n\n" +
+                L($"インポートが完了しました。\n\n", $"Import completed.\n\n") +
                 $"Prefab: {result.prefabPath}\n" +
                 $"Mesh: {result.meshCount}\n" +
                 $"Material: {result.materialCount}\n" +
                 $"Texture: {result.textureCount}";
             if (result.warnings.Count > 0)
-                message += $"\n\n警告: {result.warnings.Count}件（Consoleを確認してください）";
+                message += L($"\n\n警告: {result.warnings.Count}件（Consoleを確認してください）", $"\n\nWarnings: {result.warnings.Count} (see Console)");
 
             EditorUtility.DisplayDialog("MiRAI Head Importer", message, "OK");
         }
         catch (Exception ex)
         {
             Debug.LogException(ex);
-            EditorUtility.DisplayDialog("MiRAI Head Importer", "インポートに失敗しました。\n\n" + ex.Message, "OK");
+            EditorUtility.DisplayDialog("MiRAI Head Importer", L("インポートに失敗しました。\n\n", "Import failed.\n\n") + ex.Message, "OK");
         }
     }
 
@@ -144,13 +151,13 @@ public static class MiraiHeadAssetBundleImporter
         bool assignAssetBundleName = true)
     {
         if (string.IsNullOrWhiteSpace(bundlePath))
-            throw new ArgumentException("AssetBundleを選択してください。", nameof(bundlePath));
+            throw new ArgumentException(L("AssetBundleを選択してください。", "Select an AssetBundle."), nameof(bundlePath));
 
         string absoluteBundlePath = Path.IsPathRooted(bundlePath)
             ? Path.GetFullPath(bundlePath)
             : Path.GetFullPath(Path.Combine(Directory.GetParent(Application.dataPath).FullName, bundlePath));
         if (!File.Exists(absoluteBundlePath))
-            throw new FileNotFoundException("AssetBundleが見つかりません。", absoluteBundlePath);
+            throw new FileNotFoundException(L("AssetBundleが見つかりません。", "AssetBundle not found."), absoluteBundlePath);
 
         outputRoot = NormalizeAssetFolder(outputRoot);
         Dictionary<string, Shader> localShaders = CollectLocalShaders();
@@ -162,16 +169,16 @@ public static class MiraiHeadAssetBundleImporter
 
         try
         {
-            EditorUtility.DisplayProgressBar("MiRAI Head Importer", "AssetBundleを読み込んでいます...", 0.02f);
+            EditorUtility.DisplayProgressBar("MiRAI Head Importer", L("AssetBundleを読み込んでいます...", "Loading AssetBundle..."), 0.02f);
             bundle = AssetBundle.LoadFromFile(absoluteBundlePath);
             if (bundle == null)
                 throw new InvalidOperationException(
-                    "AssetBundleを読み込めませんでした。別のUnityバージョン、破損、または既にロード済みの可能性があります。");
+                    L("AssetBundleを読み込めませんでした。別のUnityバージョン、破損、または既にロード済みの可能性があります。", "Could not load the AssetBundle. It may use a different Unity version, be corrupted, or already be loaded."));
 
             GameObject sourcePrefab = bundle.LoadAllAssets<GameObject>()
                 .FirstOrDefault(go => go != null && go.GetComponentInChildren<MiraiHead>(true) != null);
             if (sourcePrefab == null)
-                throw new InvalidOperationException("MiraiHeadコンポーネントを持つPrefabがAssetBundle内に見つかりません。");
+                throw new InvalidOperationException(L("MiraiHeadコンポーネントを持つPrefabがAssetBundle内に見つかりません。", "No Prefab with a MiraiHead component was found in the AssetBundle."));
 
             string bundleFileName = Path.GetFileName(absoluteBundlePath);
             string characterFolderName = SanitizeFileName(
@@ -195,7 +202,7 @@ public static class MiraiHeadAssetBundleImporter
             Mesh[] meshes = dependencies.OfType<Mesh>().Distinct().ToArray();
             for (int i = 0; i < meshes.Length; i++)
             {
-                EditorUtility.DisplayProgressBar("MiRAI Head Importer", $"Meshを保存しています ({i + 1}/{meshes.Length})", Progress(i, meshes.Length, 0.08f, 0.25f));
+                EditorUtility.DisplayProgressBar("MiRAI Head Importer", L($"Meshを保存しています ({i + 1}/{meshes.Length})", $"Saving meshes ({i + 1}/{meshes.Length})"), Progress(i, meshes.Length, 0.08f, 0.25f));
                 Mesh clone = UnityEngine.Object.Instantiate(meshes[i]);
                 clone.name = meshes[i].name;
                 string path = UniqueAssetPath(meshFolder, clone.name, ".asset");
@@ -207,7 +214,7 @@ public static class MiraiHeadAssetBundleImporter
             Texture2D[] textures = dependencies.OfType<Texture2D>().Distinct().ToArray();
             for (int i = 0; i < textures.Length; i++)
             {
-                EditorUtility.DisplayProgressBar("MiRAI Head Importer", $"Textureを復元しています ({i + 1}/{textures.Length})", Progress(i, textures.Length, 0.25f, 0.57f));
+                EditorUtility.DisplayProgressBar("MiRAI Head Importer", L($"Textureを復元しています ({i + 1}/{textures.Length})", $"Restoring textures ({i + 1}/{textures.Length})"), Progress(i, textures.Length, 0.25f, 0.57f));
                 TextureUsage usage;
                 if (!textureUsage.TryGetValue(textures[i], out usage)) usage = new TextureUsage { color = true };
                 Texture2D imported = ExportTexture(textures[i], usage, textureFolder);
@@ -220,7 +227,7 @@ public static class MiraiHeadAssetBundleImporter
             Material[] materials = dependencies.OfType<Material>().Distinct().ToArray();
             for (int i = 0; i < materials.Length; i++)
             {
-                EditorUtility.DisplayProgressBar("MiRAI Head Importer", $"Materialを再構築しています ({i + 1}/{materials.Length})", Progress(i, materials.Length, 0.62f, 0.76f));
+                EditorUtility.DisplayProgressBar("MiRAI Head Importer", L($"Materialを再構築しています ({i + 1}/{materials.Length})", $"Rebuilding materials ({i + 1}/{materials.Length})"), Progress(i, materials.Length, 0.62f, 0.76f));
                 Material clone = CloneMaterial(materials[i], localShaders, remap, result);
                 string path = UniqueAssetPath(materialFolder, clone.name, ".mat");
                 AssetDatabase.CreateAsset(clone, path);
@@ -231,9 +238,10 @@ public static class MiraiHeadAssetBundleImporter
             foreach (UnityEngine.Object dataAsset in clonedDataAssets)
                 RemapSerializedReferences(dataAsset, remap, localShaders, localScripts, result);
 
-            EditorUtility.DisplayProgressBar("MiRAI Head Importer", "Prefabを再構築しています...", 0.80f);
+            EditorUtility.DisplayProgressBar("MiRAI Head Importer", L("Prefabを再構築しています...", "Rebuilding Prefab..."), 0.80f);
             instance = UnityEngine.Object.Instantiate(sourcePrefab);
             instance.name = sourcePrefab.name;
+            ReplaceMissingScripts(instance, result);
             foreach (Component component in instance.GetComponentsInChildren<Component>(true))
             {
                 if (component != null)
@@ -244,7 +252,7 @@ public static class MiraiHeadAssetBundleImporter
             bool prefabSaved;
             PrefabUtility.SaveAsPrefabAsset(instance, prefabPath, out prefabSaved);
             if (!prefabSaved)
-                throw new InvalidOperationException("再構築したPrefabを保存できませんでした。");
+                throw new InvalidOperationException(L("再構築したPrefabを保存できませんでした。", "Could not save the rebuilt Prefab."));
 
             if (assignAssetBundleName)
             {
@@ -290,7 +298,7 @@ public static class MiraiHeadAssetBundleImporter
 
         foreach (string warning in result.warnings.Distinct())
             Debug.LogWarning("[MiRAI Head Importer] " + warning);
-        Debug.Log($"[MiRAI Head Importer] Import completed: {result.prefabPath}");
+        Debug.Log("[MiRAI Head Importer] " + L($"インポート完了: {result.prefabPath}", $"Import completed: {result.prefabPath}"));
         return result;
     }
 
@@ -379,7 +387,7 @@ public static class MiraiHeadAssetBundleImporter
         AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
 
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
-        if (importer == null) throw new InvalidOperationException("TextureImporterを取得できません: " + path);
+        if (importer == null) throw new InvalidOperationException(L("TextureImporterを取得できません: ", "Could not get TextureImporter: ") + path);
         importer.textureType = usage.normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
         importer.sRGBTexture = !linear;
         importer.mipmapEnabled = source.mipmapCount > 1;
@@ -392,7 +400,7 @@ public static class MiraiHeadAssetBundleImporter
         importer.SaveAndReimport();
 
         Texture2D imported = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-        if (imported == null) throw new InvalidOperationException("復元したTextureを読み込めません: " + path);
+        if (imported == null) throw new InvalidOperationException(L("復元したTextureを読み込めません: ", "Could not load the restored texture: ") + path);
         return imported;
     }
 
@@ -413,14 +421,14 @@ public static class MiraiHeadAssetBundleImporter
             readable.Apply(false, false);
             byte[] png = ImageConversion.EncodeToPNG(readable);
             if (png == null || png.Length == 0)
-                throw new InvalidOperationException("PNGエンコードに失敗しました: " + source.name);
+                throw new InvalidOperationException(L("PNGエンコードに失敗しました: ", "PNG encoding failed: ") + source.name);
             return png;
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException(
-                $"Textureの復元に失敗しました: {source.name} ({source.format}, {source.width}x{source.height})。" +
-                "このPCでAndroid Texture形式をGPU変換できない可能性があります。", ex);
+                L($"Textureの復元に失敗しました: {source.name} ({source.format}, {source.width}x{source.height})。", $"Failed to restore texture: {source.name} ({source.format}, {source.width}x{source.height}). ") +
+                L("このPCでAndroid Texture形式をGPU変換できない可能性があります。", "This PC may not support GPU conversion of the Android texture format."), ex);
         }
         finally
         {
@@ -446,7 +454,7 @@ public static class MiraiHeadAssetBundleImporter
                              source is PhysicsMaterial2D;
             if (!supported)
             {
-                AddWarning(result, $"未対応の依存アセットをスキップしました: {source.name} ({source.GetType().Name})");
+                AddWarning(result, L($"未対応の依存アセットをスキップしました: {source.name} ({source.GetType().Name})", $"Skipped an unsupported dependency: {source.name} ({source.GetType().Name})"));
                 continue;
             }
 
@@ -474,7 +482,7 @@ public static class MiraiHeadAssetBundleImporter
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    $"依存アセットを複製できませんでした: {source.name} ({source.GetType().Name})", ex);
+                    L($"依存アセットを複製できませんでした: {source.name} ({source.GetType().Name})", $"Could not clone dependency: {source.name} ({source.GetType().Name})"), ex);
             }
         }
     }
@@ -504,8 +512,8 @@ public static class MiraiHeadAssetBundleImporter
         {
             localShaders.TryGetValue("Universal Render Pipeline/Lit", out shader);
             if (shader == null)
-                throw new InvalidOperationException($"置換先Shaderが見つかりません: {shaderName}");
-            AddWarning(result, $"Shader '{shaderName}' がプロジェクトにないためURP/Litへ置き換えました: {source.name}");
+                throw new InvalidOperationException(L($"置換先Shaderが見つかりません: {shaderName}", $"Replacement shader not found: {shaderName}"));
+            AddWarning(result, L($"Shader '{shaderName}' がプロジェクトにないためURP/Litへ置き換えました: {source.name}", $"Shader '{shaderName}' is missing from this project; replaced with URP/Lit: {source.name}"));
         }
 
         var clone = new Material(shader) { name = source.name };
@@ -582,7 +590,60 @@ public static class MiraiHeadAssetBundleImporter
         catch (Exception ex)
         {
             AddWarning(result,
-                $"参照の再マップを一部適用できませんでした: {targetName} ({targetTypeName}): {ex.Message}");
+                L($"参照の再マップを一部適用できませんでした: {targetName} ({targetTypeName}): {ex.Message}", $"Could not remap some references: {targetName} ({targetTypeName}): {ex.Message}"));
+        }
+    }
+
+    private static void ReplaceMissingScripts(GameObject root, MiraiHeadImportResult result)
+    {
+        foreach (Transform transform in root.GetComponentsInChildren<Transform>(true))
+        {
+            GameObject gameObject = transform.gameObject;
+            int count = GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(gameObject);
+            if (count == 0) continue;
+
+            // Missingの実体がUnity側で公開される場合だけm_Scriptを調べる。
+            // nullスロットから型名を推測すると誤情報になるので、取得不能は明示する。
+            var entries = new List<string>();
+            var serialized = new SerializedObject(gameObject);
+            SerializedProperty components = serialized.FindProperty("m_Component");
+            Component[] attached = gameObject.GetComponents<Component>();
+            for (int i = 0; i < attached.Length; i++)
+            {
+                if (attached[i] != null) continue;
+                string scriptName = null;
+                try
+                {
+                    SerializedProperty reference = components?.GetArrayElementAtIndex(i)
+                        .FindPropertyRelative("component");
+                    UnityEngine.Object missing = reference?.objectReferenceValue;
+                    if (!ReferenceEquals(missing, null))
+                    {
+                        var missingSerialized = new SerializedObject(missing);
+                        var script = missingSerialized.FindProperty("m_Script")?.objectReferenceValue as MonoScript;
+                        if (script != null) scriptName = script.GetClass()?.FullName ?? script.name;
+                    }
+                }
+                catch (Exception)
+                {
+                    // 型がロードできないコンポーネントはSerializedObjectも作れない場合がある。
+                }
+                entries.Add($"Component[{i}]: " +
+                    (string.IsNullOrEmpty(scriptName) ? L("スクリプト名取得不可（Missing Script）", "Script name unavailable (Missing Script)") : scriptName));
+            }
+
+            // 記録を先に付け、元のGameObjectとTransformはそのまま保持する。
+            MissingScript placeholder = gameObject.AddComponent<MissingScript>();
+            placeholder.info.AddRange(entries);
+            GameObjectUtility.RemoveMonoBehavioursWithMissingScript(gameObject);
+            if (GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(gameObject) != 0)
+                throw new InvalidOperationException(L("Missing Scriptを削除できませんでした: ", "Could not remove missing scripts: ") + gameObject.name);
+
+            string path = gameObject.name;
+            for (Transform parent = transform.parent; parent != null; parent = parent.parent)
+                path = parent.name + "/" + path;
+            AddWarning(result, L($"Missing Script {count}件を記録用コンポーネントへ置換しました: {path}\n", $"Replaced {count} missing scripts with a placeholder component: {path}\n") +
+                string.Join("\n", entries));
         }
     }
 
@@ -593,7 +654,7 @@ public static class MiraiHeadAssetBundleImporter
         if (scriptProperty == null) return;
         MonoScript localScript;
         if (!localScripts.TryGetValue(targetType, out localScript) || localScript == null)
-            throw new InvalidOperationException("ローカルScriptが見つかりません: " + targetType.FullName);
+            throw new InvalidOperationException(L("ローカルScriptが見つかりません: ", "Local script not found: ") + targetType.FullName);
         if (scriptProperty.objectReferenceValue == localScript) return;
 
         // 他のAssetBundle参照も同じSerializedObject上で置換してから一度だけApplyする。
@@ -603,14 +664,14 @@ public static class MiraiHeadAssetBundleImporter
     private static void ValidateImportedPrefab(MiraiHeadImportResult result)
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(result.prefabPath);
-        if (prefab == null) throw new InvalidOperationException("保存後のPrefabを読み込めません: " + result.prefabPath);
+        if (prefab == null) throw new InvalidOperationException(L("保存後のPrefabを読み込めません: ", "Could not load the saved Prefab: ") + result.prefabPath);
         if (prefab.GetComponentInChildren<MiraiHead>(true) == null)
-            throw new InvalidOperationException("保存後のPrefabからMiraiHeadコンポーネントが失われています。");
+            throw new InvalidOperationException(L("保存後のPrefabからMiraiHeadコンポーネントが失われています。", "The saved Prefab is missing its MiraiHead component."));
 
         int missingScripts = prefab.GetComponentsInChildren<Transform>(true)
             .Sum(transform => GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(transform.gameObject));
         if (missingScripts > 0)
-            throw new InvalidOperationException($"生成PrefabにMissing Scriptが{missingScripts}件あります。");
+            throw new InvalidOperationException(L($"生成PrefabにMissing Scriptが{missingScripts}件あります。", $"The generated Prefab has {missingScripts} missing scripts."));
 
         string absolutePrefabPath = ToAbsolutePath(result.prefabPath);
         int bundleReferenceCount = File.ReadLines(absolutePrefabPath).Count(line =>
@@ -618,7 +679,7 @@ public static class MiraiHeadAssetBundleImporter
             !line.Contains("fileID: 0,"));
         if (bundleReferenceCount > 0)
             throw new InvalidOperationException(
-                $"生成PrefabにAssetBundle内への無効な参照が{bundleReferenceCount}件残っています。");
+                L($"生成PrefabにAssetBundle内への無効な参照が{bundleReferenceCount}件残っています。", $"The generated Prefab still has {bundleReferenceCount} invalid references into the AssetBundle."));
 
         string importFolder = Path.GetDirectoryName(result.prefabPath)?.Replace('\\', '/');
         string dataFolder = importFolder + "/Data";
@@ -629,12 +690,12 @@ public static class MiraiHeadAssetBundleImporter
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (AssetDatabase.LoadAssetAtPath<ScriptableObject>(path) == null)
-                    throw new InvalidOperationException("保存後のDataアセットからScriptが失われています: " + path);
+                    throw new InvalidOperationException(L("保存後のDataアセットからScriptが失われています: ", "A saved data asset is missing its script: ") + path);
                 importedScriptableObjectCount++;
             }
             if (importedScriptableObjectCount != result.scriptableObjectCount)
                 throw new InvalidOperationException(
-                    $"保存後のDataアセットからScriptが失われています。" +
+                    L($"保存後のDataアセットからScriptが失われています。", $"Saved data assets are missing scripts.") +
                     $" expected={result.scriptableObjectCount}, actual={importedScriptableObjectCount}");
         }
 
@@ -643,7 +704,7 @@ public static class MiraiHeadAssetBundleImporter
             if (dependency == null || dependency is GameObject || dependency is Component) continue;
             string path = AssetDatabase.GetAssetPath(dependency);
             if (string.IsNullOrEmpty(path) && !(dependency is MonoScript))
-                AddWarning(result, $"Project内へ保存されていない参照が残っています: {dependency.name} ({dependency.GetType().Name})");
+                AddWarning(result, L($"Project内へ保存されていない参照が残っています: {dependency.name} ({dependency.GetType().Name})", $"A reference has not been saved into the project: {dependency.name} ({dependency.GetType().Name})"));
         }
     }
 
@@ -653,7 +714,7 @@ public static class MiraiHeadAssetBundleImporter
         if (Path.IsPathRooted(path)) path = ToAssetPath(path);
         path = (path ?? "").Replace('\\', '/').TrimEnd('/');
         if (path != "Assets" && !path.StartsWith("Assets/", StringComparison.Ordinal))
-            throw new ArgumentException("出力先はAssets内を指定してください。", nameof(path));
+            throw new ArgumentException(L("出力先はAssets内を指定してください。", "The output folder must be inside Assets."), nameof(path));
         return EnsureFolder(path);
     }
 
@@ -664,7 +725,7 @@ public static class MiraiHeadAssetBundleImporter
         string parent = Path.GetDirectoryName(assetPath)?.Replace('\\', '/');
         string name = Path.GetFileName(assetPath);
         if (string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(name))
-            throw new InvalidOperationException("フォルダーを作成できません: " + assetPath);
+            throw new InvalidOperationException(L("フォルダーを作成できません: ", "Could not create folder: ") + assetPath);
         EnsureFolder(parent);
         AssetDatabase.CreateFolder(parent, name);
         return assetPath;
@@ -678,7 +739,7 @@ public static class MiraiHeadAssetBundleImporter
         int suffix = 1;
         while (AssetDatabase.IsValidFolder(candidate)) candidate = parent + "/" + baseName + "_" + suffix++;
         string guid = AssetDatabase.CreateFolder(parent, Path.GetFileName(candidate));
-        if (string.IsNullOrEmpty(guid)) throw new InvalidOperationException("インポート先フォルダーを作成できません: " + candidate);
+        if (string.IsNullOrEmpty(guid)) throw new InvalidOperationException(L("インポート先フォルダーを作成できません: ", "Could not create import folder: ") + candidate);
         return candidate;
     }
 
@@ -713,4 +774,17 @@ public static class MiraiHeadAssetBundleImporter
     {
         if (!result.warnings.Contains(message)) result.warnings.Add(message);
     }
+}
+
+internal static class MiraiHeadImporterLanguage
+{
+    private const string PreferenceKey = "MiRAIHead.AssetBundleImporter.English";
+
+    internal static bool English
+    {
+        get => EditorPrefs.GetBool(PreferenceKey, false);
+        set => EditorPrefs.SetBool(PreferenceKey, value);
+    }
+
+    internal static string L(string japanese, string english) => English ? english : japanese;
 }
