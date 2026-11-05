@@ -11,6 +11,7 @@ public class MiraiHead : MonoBehaviour
     Transform rightEyeBone;
     [SerializeField]
     SkinnedMeshRenderer headMesh;
+    public SkinnedMeshRenderer HeadMesh => headMesh;
     [Header("影を受けないレンダラーを登録")]
     [SerializeField]
     List<Renderer> dontReceiveShadowRenderers = new List<Renderer>();

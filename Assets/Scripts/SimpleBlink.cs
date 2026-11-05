@@ -8,6 +8,22 @@ public class SimpleBlink : MonoBehaviour
 
     private int blinkIndex = -1;
 
+    private void Reset()
+    {
+        AutoAssignFaceMesh();
+    }
+
+    [ContextMenu("Auto Assign Face Mesh From MiraiHead")]
+    private void AutoAssignFaceMesh()
+    {
+        if (faceMesh != null)
+            return;
+
+        MiraiHead miraiHead = GetComponentInParent<MiraiHead>(true);
+        if (miraiHead != null)
+            faceMesh = miraiHead.HeadMesh;
+    }
+
     [Header("瞬き間隔（秒）")]
     public float intervalMin = 1.0f;
     public float intervalMax = 5.0f;

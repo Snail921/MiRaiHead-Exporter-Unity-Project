@@ -65,9 +65,11 @@ FBXから生成されたモデルをシーンへ配置し、Transform、マテ�
 
 瞬きを制御するGameObjectへ`SimpleBlink`コンポーネントを追加します。
 
-1. `Face Mesh`へ顔のSkinnedMeshRendererを設定します。
+1. `Face Mesh`へ顔のSkinnedMeshRendererが設定されていることを確認します。
 2. 瞬き間隔、連続瞬きの発生率、閉じる速度、開く速度などを調整します。
 3. 対象Meshに「まばたき」「瞬き」または「blink」を含むBlendShapeがあることを確認します。
+
+`MiraiHead`の`Head Mesh`が設定済みの状態で`SimpleBlink`を追加すると、`Face Mesh`は自動的に設定されます。別のRendererを手動設定済みの場合は上書きしません。必要に応じてコンポーネントのContext Menuから`Auto Assign Face Mesh From MiraiHead`を実行できます。
 
 ### 7. Prefab化する
 
